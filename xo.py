@@ -45,8 +45,10 @@ class Button:
 
 def draw_grid():
     for i in range(size_board - 1):
+        # Рисует горизонтальную линию
         draw.line(scene, BLACK, (margin, margin + 50 + size_cell + size_cell * i - 1),
                   (margin + size_cell * size_board, margin + 50 + size_cell + size_cell * i - 1), 2)
+        # Рисует вертикальную линию
         draw.line(scene, BLACK, (margin + size_cell + size_cell * i - 1, margin + 50),
                   (margin + size_cell + size_cell * i - 1, margin + 50 + size_cell * size_board), 2)
 
@@ -62,6 +64,7 @@ def draw_img_player(coord_cell):
 def check_win():
     for i in range(size_board):
         print(i)
+        # Проверка выигрыша
         if (val_board[i * 3] == val_board[i * 3 + 1] == val_board[i * 3 + 2] and val_board[i * 3] + val_board[
             i * 3 + 1] + val_board[i * 3 + 2] > 0) or (
                 val_board[i] == val_board[i + 3] == val_board[i + 6] and val_board[i] + val_board[i + 3] + val_board[
@@ -75,8 +78,8 @@ def check_win():
 
 def step(coord_cell):
     if not check_win():
-        num_cell = coord_cell[0] + (coord_cell[1] - 1) * size_board - 1
-        val_board[num_cell] = 1
+        num_cell = coord_cell[0] + (coord_cell[1] - 1) * size_board - 1 # Номер нажатой ячейки
+        val_board[num_cell] = 1 # Ход игрока, добавление хода в val_board
         # print(num_cell)
 
 
@@ -86,6 +89,7 @@ scene = display.set_mode(size)
 display.set_caption("Крестики-Нолики")
 scene.fill(WHITE)
 
+# Создание объектов Крестика и Нолика
 X = create_but(120, 40, (65, 15), "X")
 O = create_but(120, 40, (315, 15), "0")
 
@@ -97,14 +101,18 @@ while not game_over:
             game_over = True
         elif e.type == MOUSEBUTTONDOWN:
             x, y = e.pos
-            click_coord = ((x - margin) // size_cell + 1, (y - margin - 50) // size_cell + 1)
+            click_coord = ((x - margin) // size_cell + 1, (y - margin - 50) // size_cell + 1) # Координаты клика
+            # Проверка, что клик не выходит за пределы сетки
             if (
                     margin <= x <= margin + size_cell * size_board and margin + 50 <= y <= margin + 50 + size_cell * size_board
                     and click_coord in cell_coord_list):
                 step(click_coord)
-                cell_coord_list.remove(((x - margin) // size_cell + 1, (y - (margin + 50)) // size_cell + 1))
+                cell_coord_list.remove(((x - margin) // size_cell + 1, (y - (margin + 50)) // size_cell + 1)) # Удаление нажатых координат
+            # Проверка,что клик по кнопке X
             if (X.x <= x <= X.x + X.width) and (X.y <= y <= X.y + X.height):
+                # 1 - крестик; 0 - нолик
                 player, computer = 1, 0
+            # Проверка, что клик по кнопке 0
             elif O.x <= x <= O.x + X.width and O.y <= y <= O.y + O.height:
                 player, computer = 0, 1
 
