@@ -20,32 +20,39 @@ game_over = False
 
 
 class Button:
-    def __init__(self, width, height, x, y, text, fill_color):
+    def __init__(self, width, height, x, y, fill_color):
         self.width = width
         self.height = height
         self.x = x
         self.y = y
-        self.text = text
         self.fill_color = fill_color
 
         self.create_button()
-        self.setText()
-        self.draw_text()
 
     def create_button(self):
         #  Рисует кнопку
         draw.rect(scene, self.fill_color, (self.x, self.y, self.width, self.height))
 
+
+class Label:
+    def __init__(self, x, y, font_size, text_color, text):
+        self.x = x
+        self.y = y
+        self.font_size = font_size
+        self.text = text
+        self.text_color = text_color
+        self.draw_text()
+
     def setText(self):
-        # Устанавливает текст на кнопке
-        self.cr_text = font.Font(None, self.height).render(self.text, True, WHITE)
+        # Возвращает объект текста
+        return font.Font(None, self.font_size).render(self.text, True, self.text_color)
 
     def draw_text(self):
-        width_text = self.cr_text.get_width()
-        height_text = self.cr_text.get_height()
-        # Отрисовка текста по центру кнопки
-        scene.blit(self.cr_text,
-                   (self.x + (self.width // 2 - width_text // 2), self.y + (self.height // 2 - height_text // 2)))
+        text = self.setText()
+        width_text = text.get_width()  # Ширина текста
+        height_text = text.get_height()  # Высота текста
+        # Отрисовка текста
+        scene.blit(text, (self.x - width_text // 2, self.y - height_text // 2))
 
 
 def draw_grid(offset=0):
@@ -58,8 +65,8 @@ def draw_grid(offset=0):
                   (margin + size_cell + size_cell * i - 1, margin + offset + size_cell * size_board), 2)
 
 
-def create_but(width, height, start_coord, text):
-    return Button(width, height, start_coord[0], start_coord[1], text, BLACK)
+def create_but(width, height, start_coord):
+    return Button(width, height, start_coord[0], start_coord[1], BLACK)
 
 
 def draw_img_player(coord_cell):
@@ -94,9 +101,9 @@ def check_win():
 
 
 def finish_screen(text):
-    obj_text = font.Font(None, 100).render(text, True, BLACK)
     scene.fill(WHITE)
-    scene.blit(obj_text, (size[0] // 2 - (obj_text.get_width() // 2), size[1] // 2 - (obj_text.get_height() // 2)))
+    Label(size[0] // 2, size[1] // 2, 100, BLACK, text)
+    # scene.blit(obj_text, (size[0] // 2 - (obj_text.get_width() // 2), size[1] // 2 - (obj_text.get_height() // 2)))
 
 
 def step(coord_cell):
@@ -121,8 +128,11 @@ display.set_icon(image.load("img/icon.ico"))
 scene.fill(WHITE)
 
 # Создание объектов Крестика и Нолика
-X_player = create_but(120, 40, (65, 15), "X")
-O_player = create_but(120, 40, (315, 15), "0")
+X_player = create_but(120, 40, (65, 15))
+O_player = create_but(120, 40, (315, 15))
+
+Label(X_player.x + X_player.width // 2, X_player.y + X_player.height // 2, X_player.height, WHITE, "X")
+Label(O_player.x + O_player.width // 2, O_player.y + O_player.height // 2, O_player.height, WHITE, "0")
 
 draw_grid(offset=50)  # Добавление смещения
 
