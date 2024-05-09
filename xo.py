@@ -154,3 +154,4 @@ while not game_over:
 
         display.update()
         time.delay(60)
+quit()
