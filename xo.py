@@ -3,18 +3,17 @@ from random import randint, choice
 
 
 class Button:
-    def __init__(self, width, height, x, y, fill_color):
+    def __init__(self, width, height, x, y):
         self.width = width
         self.height = height
         self.x = x
         self.y = y
-        self.fill_color = fill_color
 
-        self.create_button()
+        self.draw_button()
 
-    def create_button(self):
+    def draw_button(self):
         #  Рисует кнопку
-        draw.rect(scene, self.fill_color, (self.x, self.y, self.width, self.height))
+        draw.rect(scene, BLACK, (self.x, self.y, self.width, self.height))
 
 
 class Label:
@@ -24,6 +23,7 @@ class Label:
         self.font_size = font_size
         self.text = text
         self.text_color = text_color
+
         self.draw_text()
 
     def setText(self):
@@ -48,34 +48,26 @@ def draw_grid(offset=0):
                   (margin + size_cell + size_cell * i - 1, margin + offset + size_cell * size_board), 2)
 
 
-def create_but(width, height, start_coord):
-    return Button(width, height, start_coord[0], start_coord[1], BLACK)
-
-
 def draw_img_player(coord_cell):
-    queue_player = queue[queue_pos]
+    queue_player = queue[queue_pos]  # Получаем номер игрока
+    # Если номер игрока 1 ...
     if queue_player:
+        # Добавляем картинку Х
         scene.blit(img_X, (
             (margin + 10) + ((coord_cell[0] - 1) * size_cell), (margin + 110) + ((coord_cell[1] - 1) * size_cell)))
     else:
+        #  Добавляем картинку Y
         scene.blit(img_O, (
             (margin + 10) + ((coord_cell[0] - 1) * size_cell), (margin + 110) + ((coord_cell[1] - 1) * size_cell)))
 
 
 def draw_up_info():
+    # Заливаем вехний прямоугольник белым цветом
     draw.rect(scene, WHITE, (0, 0, 500, 100))
+    # Создаем надписи
     Label(size[0] // 4, 25, 40, BLACK, f"Человек: {players[player]}")
     Label(size[0] // 4 * 3, 25, 40, BLACK, f"Компьютер: {players[computer]}")
     Label(size[0] // 2, 75, 35, BLACK, f"Ход {players[queue[queue_pos]]}")
-
-
-def hide_button():
-    global scene
-    scene = display.set_mode(size)
-    scene.fill(WHITE)
-
-    draw_grid(offset=100)
-    draw_up_info()
 
 
 def check_win():
@@ -95,10 +87,13 @@ def check_win():
 
 
 def finish_screen(text):
+    # Заливаем экран белым цветом
     scene.fill(WHITE)
+    # Размещаем надпись о победе или ничьей
     Label(size[0] // 2, size[1] // 4, 100, BLACK, text)
-    # scene.blit(obj_text, (size[0] // 2 - (obj_text.get_width() // 2), size[1] // 2 - (obj_text.get_height() // 2)))
-    repit = create_but(280, 80, (size[0] // 2 - 140, size[1] // 4 * 3 - 40))
+    # размещаем кнопку
+    repit = Button(280, 80, size[0] // 2 - 140, size[1] // 4 * 3 - 40)
+    # размещаем на кнопке надпись
     Label(size[0] // 2, size[1] // 4 * 3, repit.height - 10, WHITE, "Переиграть")
 
 
@@ -120,8 +115,8 @@ def repit_game():
     info_up.draw_text()
 
     # отрисовка объектов Крестика и Нолика
-    X_player.create_button()
-    O_player.create_button()
+    X_player.draw_button()
+    O_player.draw_button()
 
     # Отрисовка текста на кнопки
     X_text.draw_text()
@@ -145,52 +140,99 @@ def step(coord_cell):
         # Совершен выигрыш либо ничья
         stop_play = True
     queue_pos = 1 - queue_pos  # Изменение очередности хода
+    #  Если игра не остановленна ...
     if not stop_play:
-        draw_up_info()
+        draw_up_info()  # Отрисовываем очередность хода
+
+
+def index_cell_in_coord(index_cell, num_pos, coord):
+    # Если известна координата Х ...
+    if num_pos == 0:
+        y = (index_cell + 1 - coord) // size_board + 1  # Находим координату Y
+        # Возвращаем координаты
+        return coord, y
+    # Если Координата на главной диагонали ...
+    elif num_pos == None:
+        #  Возвращаем координаты
+        return coord, coord
+    # Если известна кордината Y или координата на побочной диагонали ...
+    else:
+        x = index_cell + 1 - coord * size_board + size_board  # Находим координату Х
+        # Возвращаем координаты
+        return x, coord
+
+
+def check_win_step(player):
+    index_cell = None
+    num_pos = coord = None
+
+    for i in range(size_board):
+        # Если в одном ряду 2 одинаковых хода ...
+        if (val_board[i * 3] + val_board[i * 3 + 1] + val_board[i * 3 + 2]) + 1 == player and val_board[
+                                                                                              i * 3:i * 3 + 2 + 1].count(
+            -1) == 1:
+            index_cell = val_board[i * 3:i * 3 + 2 + 1].index(-1) + (
+                    size_board * i)  # Номер ячейки, в которую надо сделать ход
+            num_pos = 1  # Номер координаты
+            coord = i + 1  # Координата
+        # Если в одном столбце 2 одинаковых хода ...
+        elif val_board[i] + val_board[i + 3] + val_board[i + 6] + 1 == player and val_board[i::3].count(
+                -1) == 1:
+            index_cell = val_board[i::3].index(-1) * size_board + i  # Номер ячейки, в которую надо сделать ход
+            num_pos = 0  # Номер координаты
+            coord = i + 1  # Координата
+        # Если в главной диагонали 2 одинаковых хода ...
+        elif val_board[0] + val_board[4] + val_board[8] + 1 == player and val_board[::4].count(
+                -1) == 1 and val_board[::4][i] == -1:
+            index_cell = val_board[::4].index(-1) * 4  # Номер ячейки, в которую надо сделать ход
+            coord = i + 1  # Координата
+        # Если в побочной диагонали 2 одинаковых хода ...
+        elif val_board[2] + val_board[4] + val_board[6] + 1 == player and val_board[2:7:2].count(
+                -1) == 1 and val_board[2:7:2][i] == -1:
+            index_cell = val_board[2:7:2].index(-1) * 2 + 2  # Номер ячейки, в которую надо сделать ход
+            coord = i + 1  # Координата
+            num_pos = 1  # Номер координаты
+    # Возвращаем номер клетки, в которую нужно сделать ход, номер координаты (0, 1), одна из координат
+    return index_cell, num_pos, coord
 
 
 def find_best_option():
-    # if (val_board[i * 3] == val_board[i * 3 + 1] == val_board[i * 3 + 2] and val_board[i * 3] + val_board[
-    #             i * 3 + 1] + val_board[i * 3 + 2] >= 0) or (
-    #                 val_board[i] == val_board[i + 3] == val_board[i + 6] and val_board[i] + val_board[i + 3] + val_board[
-    #             i + 6] >= 0) or (
-    #                 val_board[0] == val_board[4] == val_board[8] and val_board[0] + val_board[4] + val_board[8] >= 0) or (
-    #                 val_board[2] == val_board[4] == val_board[6] and val_board[2] + val_board[4] + val_board[
-    #             6] >= 0):
-    for i in range(size_board):
-        if val_board[i * 3] + val_board[i * 3 + 1] + val_board[i * 3 + 2] + 1 == 0 and val_board[i:i * 3 + 2 + 1].count(
-                -1) == 1:
-            index_cell = val_board[i:i * 3 + 2 + 1].index(-1) * (i + 1)
-            print("1", val_board, val_board[i:i * 3 + 2 + 1], index_cell, sep="\t")
-        elif val_board[i] + val_board[i + 3] + val_board[i + 6] + 1 == 0 and val_board[::3].count(
-                -1) == 1:
-            index_cell = val_board[::3].index(-1) * size_board + i
-            print("2", val_board, val_board[::3], index_cell, sep="\t")
-        elif val_board[0] + val_board[4] + val_board[8] + 1 == 0 and val_board[::4].count(
-                -1) == 1:
-            index_cell = val_board[::4].index(-1) * 4
-            print("3", val_board, val_board[::4], index_cell, sep="\t")
-        elif val_board[2] + val_board[4] + val_board[6] + 1 == 0:
-            pass
+    # Получение номера клетки, в которую нужно сделать ход, номера координаты (0, 1), одной из координат для компьютера
+    index_cell, num_pos, coord = check_win_step(queue[queue_pos] * 2)
+    # Если номер клетки и координата не None ...
+    if index_cell != coord != None:
+        return index_cell_in_coord(index_cell, num_pos, coord)  # Возвращаем полные координаты клетки
+
+    # Получение номера клетки, в которую нужно сделать ход, номера координаты (0, 1), одной из координат для игрока
+    index_cell, num_pos, coord = check_win_step(queue[1 - queue_pos] * 2)
+    # Если номер клетки и координата не None ...
+    if index_cell != coord != None:
+        return index_cell_in_coord(index_cell, num_pos, coord)  # Возвращаем полные координаты клетки
 
 
 def choice_step_computer():
     global count_step_computer
-    best_coord = find_best_option()
+    # Если первый ход компьютера ...
     if not count_step_computer:
-        coord_step = choice([(1, 1), (1, 3), (3, 1), (3, 3), (2, 2)])
+        coord_step = choice([(1, 1), (1, 3), (2, 2), (3, 1), (3, 3)])  # Выбор случайных координат
+        count_step_computer += 1  # Кол-во ходов компьютера +1
+        # Если выбранные координаты в списке свободных координат ...
         if coord_step in cell_coord_list:
-            step(coord_step)
-            cell_coord_list.remove(coord_step)
+            step(coord_step)  # Выполняем ход
+            cell_coord_list.remove(coord_step)  # Удаляем координаты из списка свободных координат
+        # Иначе ...
         else:
-            return choice_step_computer()
-        count_step_computer += 1
-    elif best_coord:
-        pass
+            return choice_step_computer()  # Запускаем рекурсию
+    # Если найдено место с наилучшими последствиями хода ...
+    elif find_best_option():
+        coord_step = find_best_option()  # Получаем координаты места
+        step(coord_step)  # Выполняем ход
+        cell_coord_list.remove(coord_step)  # Удаляем координаты из списка свободных координат
+    # Иначе ...
     else:
-        coord_step = choice(cell_coord_list)
-        step(coord_step)
-        cell_coord_list.remove(coord_step)
+        coord_step = choice(cell_coord_list)  # Случайно выбираем координаты из списка доступных
+        step(coord_step)  # Выполняем ход
+        cell_coord_list.remove(coord_step)  # Удаляем координаты из списка свободных координат
 
 
 BLACK = (0, 0, 0)
@@ -204,6 +246,7 @@ count_step = 0
 count_step_computer = 0
 cell_coord_list = [(x, y) for x in range(1, 4) for y in range(1, 4)]
 val_board = [-1 for _ in range(9)]
+player1 = player2 = None
 player = computer = None
 queue = (player, computer)
 queue_pos = randint(0, 1)
@@ -220,12 +263,21 @@ display.set_caption("Крестики-Нолики")
 display.set_icon(image.load("img/icon.ico"))
 scene.fill(WHITE)
 
+# Label(size[0] // 2, 25, 40, BLACK, "Выберите с кем будете играть").draw_text()
+# human_human = Button(170, 40, 40, 55)
+# human_computer = Button(170, 40, 290, 55)
+#
+# Label(human_human.x + human_human.width // 2, human_human.y + human_human.height // 2, human_human.height, WHITE,
+#       "Человек").draw_text()
+# Label(human_computer.x + human_computer.width // 2, human_computer.y + human_computer.height // 2,
+#       human_computer.height, WHITE, "Компьютер").draw_text()
+
 # Создание текста о выборе персонажа
 info_up = Label(size[0] // 2, 25, 40, BLACK, "Выберите X либо O")
 
 # Создание объектов Крестика и Нолика
-X_player = create_but(120, 40, (65, 55))
-O_player = create_but(120, 40, (315, 55))
+X_player = Button(120, 40, 65, 55)
+O_player = Button(120, 40, 315, 55)
 
 # Создание объектов текста X и 0
 X_text = Label(X_player.x + X_player.width // 2, X_player.y + X_player.height // 2, X_player.height, WHITE, "X")
@@ -235,8 +287,10 @@ draw_grid(offset=100)  # Добавление смещения
 
 while not game_over:
     for e in event.get():
+        # Если нажата кнопка закрытия ...
         if e.type == QUIT:
             game_over = True
+        # Если был клик мыши
         elif e.type == MOUSEBUTTONDOWN:
             x, y = e.pos
             click_coord = ((x - margin) // size_cell + 1, (y - margin - 100) // size_cell + 1)  # Координаты клика
@@ -253,24 +307,23 @@ while not game_over:
                     X_player.y <= y <= X_player.y + X_player.height):
                 # 1 - крестик; 0 - нолик
                 player, computer = 1, 0
-                # Создание очередности игроков
-                queue = (player, computer)
-                hide_button()
             # Проверка, что клик по кнопке 0
             elif (player == computer == None) and (O_player.x <= x <= O_player.x + X_player.width) and (
                     O_player.y <= y <= O_player.y + O_player.height):
                 # 1 - крестик; 0 - нолик
                 player, computer = 0, 1
-                # Создание очередности игроков
-                queue = (player, computer)
-                hide_button()
-
+            # Создание очередности игроков
+            queue = (player, computer)
+            # Если игра не остановлена ...
+            if not stop_play:
+                draw_up_info()  # Отрисовываем очередность хода
             # Проверка что клик по кнопке Переиграть
             if stop_play and (size[0] // 2 - 140 <= x <= size[0] // 2 + 140 and size[1] // 4 * 3 - 40 <= y <= size[
                 1] // 4 * 3 + 40):
                 repit_game()
+    # Если очередь хода компьютера и заданы значения ходов и игра не остановлена ...
     if queue_pos and (player != computer != None) and not stop_play:
-        choice_step_computer()
+        choice_step_computer()  # Выбираем ход для компьютера
 
     display.update()
     time.delay(60)
