@@ -61,12 +61,12 @@ def draw_img_player(coord_cell):
             (margin + 10) + ((coord_cell[0] - 1) * size_cell), (margin + 110) + ((coord_cell[1] - 1) * size_cell)))
 
 
-def draw_up_info(human_or_computer, role_game):
+def draw_up_info():
     # Заливаем вехний прямоугольник белым цветом
     draw.rect(scene, WHITE, (0, 0, 500, 100))
     # Создаем надписи
-    Label(size[0] // 4, 25, 40, BLACK, f"{human_or_computer[0]}: {players[role_game[0]]}")
-    Label(size[0] // 4 * 3, 25, 40, BLACK, f"{human_or_computer[1]}: {players[role_game[1]]}")
+    Label(size[0] // 4, 25, 40, BLACK, f"Человек: {players[player]}")
+    Label(size[0] // 4 * 3, 25, 40, BLACK, f"Компьютер: {players[computer]}")
     Label(size[0] // 2, 75, 35, BLACK, f"Ход {players[queue[queue_pos]]}")
 
 
@@ -115,12 +115,12 @@ def repit_game():
     info_up.draw_text()
 
     # отрисовка объектов Крестика и Нолика
-    human_human.draw_button()
-    human_computer.draw_button()
+    X_player.draw_button()
+    O_player.draw_button()
 
     # Отрисовка текста на кнопки
-    human_text.draw_text()
-    computer_text.draw_text()
+    X_text.draw_text()
+    O_text.draw_text()
 
     draw_grid(offset=100)  # Отрисовка сетки со смещением
 
@@ -141,11 +141,8 @@ def step(coord_cell):
         stop_play = True
     queue_pos = 1 - queue_pos  # Изменение очередности хода
     #  Если игра не остановленна ...
-    # Если игра не остановлена ...
-    if not stop_play and player != computer != None:
-        draw_up_info(("Человек", "Компьютер"), (player, computer))  # Отрисовываем очередность хода
-    elif not stop_play and player1 != player2 != None:
-        draw_up_info(("Игрок 1", "Игрок 2"), (player1, player2))  # Отрисовываем очередность хода
+    if not stop_play:
+        draw_up_info()  # Отрисовываем очередность хода
 
 
 def index_cell_in_coord(index_cell, num_pos, coord):
@@ -238,21 +235,6 @@ def choice_step_computer():
         cell_coord_list.remove(coord_step)  # Удаляем координаты из списка свободных координат
 
 
-def draw_choice_X_or_O():
-    global X_player, O_player
-    draw.rect(scene, WHITE, (0, 0, 500, 100))
-    # Создание текста о выборе персонажа
-    Label(size[0] // 2, 25, 40, BLACK, "Выберите X либо O")
-
-    # Создание объектов Крестика и Нолика
-    X_player = Button(120, 40, 65, 55)
-    O_player = Button(120, 40, 315, 55)
-
-    # Создание объектов текста X и 0
-    Label(X_player.x + X_player.width // 2, X_player.y + X_player.height // 2, X_player.height, WHITE, "X")
-    Label(O_player.x + O_player.width // 2, O_player.y + O_player.height // 2, O_player.height, WHITE, "O")
-
-
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
@@ -264,10 +246,9 @@ count_step = 0
 count_step_computer = 0
 cell_coord_list = [(x, y) for x in range(1, 4) for y in range(1, 4)]
 val_board = [-1 for _ in range(9)]
-play_with_human = play_with_computer = None
 player1 = player2 = None
 player = computer = None
-X_player = O_player = None
+queue = (player, computer)
 queue_pos = randint(0, 1)
 players = ["O", "X"]
 img_X = transform.scale(image.load("img/x.png"), (size_cell - 20, size_cell - 20))
@@ -282,15 +263,25 @@ display.set_caption("Крестики-Нолики")
 display.set_icon(image.load("img/icon.ico"))
 scene.fill(WHITE)
 
-info_up = Label(size[0] // 2, 25, 40, BLACK, "Выберите с кем будете играть")
-human_human = Button(170, 40, 40, 55)
-human_computer = Button(170, 40, 290, 55)
+# Label(size[0] // 2, 25, 40, BLACK, "Выберите с кем будете играть").draw_text()
+# human_human = Button(170, 40, 40, 55)
+# human_computer = Button(170, 40, 290, 55)
+#
+# Label(human_human.x + human_human.width // 2, human_human.y + human_human.height // 2, human_human.height, WHITE,
+#       "Человек").draw_text()
+# Label(human_computer.x + human_computer.width // 2, human_computer.y + human_computer.height // 2,
+#       human_computer.height, WHITE, "Компьютер").draw_text()
 
-human_text = Label(human_human.x + human_human.width // 2, human_human.y + human_human.height // 2, human_human.height,
-                   WHITE,
-                   "Человек")
-computer_text = Label(human_computer.x + human_computer.width // 2, human_computer.y + human_computer.height // 2,
-                      human_computer.height, WHITE, "Компьютер")
+# Создание текста о выборе персонажа
+info_up = Label(size[0] // 2, 25, 40, BLACK, "Выберите X либо O")
+
+# Создание объектов Крестика и Нолика
+X_player = Button(120, 40, 65, 55)
+O_player = Button(120, 40, 315, 55)
+
+# Создание объектов текста X и 0
+X_text = Label(X_player.x + X_player.width // 2, X_player.y + X_player.height // 2, X_player.height, WHITE, "X")
+O_text = Label(O_player.x + O_player.width // 2, O_player.y + O_player.height // 2, O_player.height, WHITE, "O")
 
 draw_grid(offset=100)  # Добавление смещения
 
@@ -303,62 +294,35 @@ while not game_over:
         elif e.type == MOUSEBUTTONDOWN:
             x, y = e.pos
             click_coord = ((x - margin) // size_cell + 1, (y - margin - 100) // size_cell + 1)  # Координаты клика
-            if (human_human.x <= x <= human_human.x + human_human.width) and (
-                    human_human.y <= y <= human_human.y + human_human.height):  # (player == computer == None) and
-                play_with_human = True
-                play_with_computer = False
-                draw_choice_X_or_O()
-            elif (
-                    human_computer.x <= x <= human_computer.x + human_computer.width) and (
-                    human_computer.y <= y <= human_computer.y + human_computer.height):  # (player == computer == None) and
-                play_with_computer = True
-                play_with_human = False
-                draw_choice_X_or_O()
-
-            # Проверка,что клик по кнопке X
-            if X_player and player1 == player2 == None and X_player.x <= x <= X_player.x + X_player.width and X_player.y <= y <= X_player.y + X_player.height:
-                # 1 - крестик; 0 - нолик
-                player1, player2 = 1, 0
-            # Проверка, что клик по кнопке 0
-            elif O_player and player1 == player2 == None and O_player.x <= x <= O_player.x + O_player.width and O_player.y <= y <= O_player.y + O_player.height:
-                # 1 - крестик; 0 - нолик
-                player1, player2 = 0, 1
-
-            # Проверка,что клик по кнопке X
-            if X_player and player == computer == None and X_player and X_player.x <= x <= X_player.x + X_player.width and X_player.y <= y <= X_player.y + X_player.height:
-                # 1 - крестик; 0 - нолик
-                player, computer = 1, 0
-            # Проверка, что клик по кнопке 0
-            elif O_player and player == computer == None and O_player and O_player.x <= x <= O_player.x + O_player.width and O_player.y <= y <= O_player.y + O_player.height:
-                # 1 - крестик; 0 - нолик
-                player, computer = 0, 1
-
             # Проверка, что очередь хода игрока, клик не выходит за пределы сетки и выбран X либо 0
-            if margin <= x <= margin + size_cell * size_board and (margin + 100) <= y <= (
-                    margin + 100) + size_cell * size_board and click_coord in cell_coord_list and player != computer != None:
+            if (not queue_pos and
+                    margin <= x <= margin + size_cell * size_board and (margin + 100) <= y <= (
+                            margin + 100) + size_cell * size_board
+                    and click_coord in cell_coord_list and player != computer != None):
                 step(click_coord)  # Совершение хода
                 cell_coord_list.remove(click_coord)  # Удаление нажатых координат
 
+            # Проверка,что клик по кнопке X
+            if (player == computer == None) and (X_player.x <= x <= X_player.x + X_player.width) and (
+                    X_player.y <= y <= X_player.y + X_player.height):
+                # 1 - крестик; 0 - нолик
+                player, computer = 1, 0
+            # Проверка, что клик по кнопке 0
+            elif (player == computer == None) and (O_player.x <= x <= O_player.x + X_player.width) and (
+                    O_player.y <= y <= O_player.y + O_player.height):
+                # 1 - крестик; 0 - нолик
+                player, computer = 0, 1
+            # Создание очередности игроков
+            queue = (player, computer)
+            # Если игра не остановлена ...
+            if not stop_play:
+                draw_up_info()  # Отрисовываем очередность хода
             # Проверка что клик по кнопке Переиграть
             if stop_play and (size[0] // 2 - 140 <= x <= size[0] // 2 + 140 and size[1] // 4 * 3 - 40 <= y <= size[
                 1] // 4 * 3 + 40):
                 repit_game()
-
-    if play_with_human:
-        # Создание очередности игроков
-        queue = (player1, player2)
-    else:
-        # Создание очередности игроков
-        queue = (player, computer)
-
-    # Если игра не остановлена ...
-    if not stop_play and player != computer != None:
-        draw_up_info(("Человек", "Компьютер"), (player, computer))  # Отрисовываем очередность хода
-    elif not stop_play and player1 != player2 != None:
-        draw_up_info(("Игрок 1", "Игрок 2"), (player1, player2))  # Отрисовываем очередность хода
-
     # Если очередь хода компьютера и заданы значения ходов и игра не остановлена ...
-    if play_with_computer and queue_pos and (player != computer != None) and not stop_play:
+    if queue_pos and (player != computer != None) and not stop_play:
         choice_step_computer()  # Выбираем ход для компьютера
 
     display.update()
